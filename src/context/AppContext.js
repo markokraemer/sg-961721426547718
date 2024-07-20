@@ -12,7 +12,6 @@ export function AppProvider({ children }) {
     setIsGenerating(true);
     setGenerationSteps([]);
     
-    // Simulate API call with multiple steps
     const steps = [
       "Analyzing app description...",
       "Generating database schema...",
@@ -28,27 +27,71 @@ export function AppProvider({ children }) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
-    setGeneratedCode(`
-// Generated code for: ${appDescription}
-import React from 'react';
-import { useState, useEffect } from 'react';
+    const backendCode = `
+// Backend code (Node.js with Express)
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
-function GeneratedApp() {
-  const [data, setData] = useState([]);
+app.use(express.json());
+
+const items = [];
+
+app.get('/api/items', (req, res) => {
+  res.json(items);
+});
+
+app.post('/api/items', (req, res) => {
+  const newItem = req.body;
+  items.push(newItem);
+  res.status(201).json(newItem);
+});
+
+app.listen(port, () => {
+  console.log(\`Server running on port \${port}\`);
+});
+    `;
+
+    const frontendCode = `
+// Frontend code (React)
+import React, { useState, useEffect } from 'react';
+
+function App() {
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState('');
 
   useEffect(() => {
-    // Simulated API call
-    fetch('/api/data')
-      .then(response => response.json())
-      .then(data => setData(data));
+    fetchItems();
   }, []);
 
+  const fetchItems = async () => {
+    const response = await fetch('/api/items');
+    const data = await response.json();
+    setItems(data);
+  };
+
+  const addItem = async () => {
+    const response = await fetch('/api/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newItem })
+    });
+    const addedItem = await response.json();
+    setItems([...items, addedItem]);
+    setNewItem('');
+  };
+
   return (
-    <div className="container mx-auto px-4">
-      <h1 className="text-3xl font-bold mb-4">Generated App</h1>
-      <p className="mb-4">This is a placeholder for your generated app based on the description: ${appDescription}</p>
+    <div>
+      <h1>${appDescription}</h1>
+      <input
+        value={newItem}
+        onChange={(e) => setNewItem(e.target.value)}
+        placeholder="New item"
+      />
+      <button onClick={addItem}>Add Item</button>
       <ul>
-        {data.map((item, index) => (
+        {items.map((item, index) => (
           <li key={index}>{item.name}</li>
         ))}
       </ul>
@@ -56,7 +99,14 @@ function GeneratedApp() {
   );
 }
 
-export default GeneratedApp;
+export default App;
+    `;
+
+    setGeneratedCode(`
+// Generated code for: ${appDescription}
+${backendCode}
+
+${frontendCode}
     `);
     setIsGenerating(false);
   };
