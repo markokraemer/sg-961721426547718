@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Layout({ children }) {
   const router = useRouter();
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,8 +35,17 @@ export default function Layout({ children }) {
               </div>
             </div>
             <div className="flex items-center">
-              <Button variant="outline" className="mr-2">Sign In</Button>
-              <Button className="bg-accent hover:bg-accent/90 text-white">Get Started</Button>
+              {user ? (
+                <>
+                  <span className="mr-4 text-gray-700">{user.email}</span>
+                  <Button variant="outline" className="mr-2" onClick={signOut}>Sign Out</Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" className="mr-2" onClick={() => router.push('/signin')}>Sign In</Button>
+                  <Button className="bg-accent hover:bg-accent/90 text-white" onClick={() => router.push('/signup')}>Get Started</Button>
+                </>
+              )}
             </div>
           </div>
         </nav>
