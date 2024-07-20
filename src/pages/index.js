@@ -2,8 +2,29 @@ import Layout from '@/components/Layout';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useApp } from '@/context/AppContext';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Home() {
+  const { appDescription, setAppDescription, generatedCode, isGenerating, generateCode } = useApp();
+  const { toast } = useToast();
+
+  const handleGenerate = () => {
+    if (!appDescription) {
+      toast({
+        title: "Error",
+        description: "Please enter an app description first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    generateCode();
+    toast({
+      title: "Generating Code",
+      description: "Your app is being generated. Please wait...",
+    });
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -16,8 +37,8 @@ export default function Home() {
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
             <div className="rounded-md shadow">
-              <Button className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                Get started
+              <Button className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={handleGenerate}>
+                {isGenerating ? 'Generating...' : 'Generate App'}
               </Button>
             </div>
           </div>
@@ -31,7 +52,11 @@ export default function Home() {
                 <CardDescription>Use natural language to describe your application's features and requirements.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Input placeholder="Describe your app..." />
+                <Input 
+                  placeholder="Describe your app..." 
+                  value={appDescription}
+                  onChange={(e) => setAppDescription(e.target.value)}
+                />
               </CardContent>
             </Card>
             <Card>
@@ -41,7 +66,13 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <div className="h-24 bg-gray-200 rounded-md flex items-center justify-center">
-                  <span className="text-gray-500">AI Processing</span>
+                  {isGenerating ? (
+                    <span className="text-gray-500">Generating...</span>
+                  ) : generatedCode ? (
+                    <span className="text-gray-500">Code Generated!</span>
+                  ) : (
+                    <span className="text-gray-500">Waiting for input...</span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -51,11 +82,29 @@ export default function Home() {
                 <CardDescription>Get your application code and deploy it with ease.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full">Download Code</Button>
+                <Button className="w-full" disabled={!generatedCode}>
+                  {generatedCode ? 'Download Code' : 'Generate Code First'}
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {generatedCode && (
+          <div className="mt-16">
+            <Card>
+              <CardHeader>
+                <CardTitle>Generated Code</CardTitle>
+                <CardDescription>Here's a preview of your generated code:</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+                  <code>{generatedCode}</code>
+                </pre>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </Layout>
   );
