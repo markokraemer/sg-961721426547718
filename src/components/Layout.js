@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Layout({ children }) {
   return (
@@ -16,7 +17,7 @@ export default function Layout({ children }) {
             <div className="flex">
               <div className="flex-shrink-0 flex items-center">
                 <Link href="/">
-                  <span className="text-2xl font-bold text-indigo-600">Softgen Clone</span>
+                  <Image src="https://softgen.ai/Logo.svg" alt="Softgen Logo" width={120} height={40} />
                 </Link>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
