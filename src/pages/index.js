@@ -6,21 +6,16 @@ import { useApp } from '@/context/AppContext';
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 export default function Home() {
   const { appDescription, setAppDescription, generatedCode, isGenerating, generateCode, generationSteps } = useApp();
   const { toast } = useToast();
   const [isHovered, setIsHovered] = useState(false);
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const handleGenerate = () => {
-    if (!appDescription.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an app description first.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const onSubmit = (data) => {
+    setAppDescription(data.appDescription);
     generateCode();
     toast({
       title: "Generating Code",
@@ -61,7 +56,7 @@ export default function Home() {
           >
             <Button 
               className="w-full sm:w-auto flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-accent hover:bg-accent/90 md:py-4 md:text-lg md:px-10 transition-colors duration-200"
-              onClick={handleGenerate}
+              onClick={handleSubmit(onSubmit)}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -82,12 +77,17 @@ export default function Home() {
               <CardDescription className="text-accent-foreground">Use natural language to describe your application's features and requirements.</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <Input 
-                placeholder="Describe your app..." 
-                value={appDescription}
-                onChange={(e) => setAppDescription(e.target.value)}
-                className="w-full p-2 border rounded transition-all duration-200 focus:ring-2 focus:ring-accent focus:border-transparent"
-              />
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Input 
+                  placeholder="Describe your app..." 
+                  {...register("appDescription", { 
+                    required: "App description is required",
+                    minLength: { value: 10, message: "Description must be at least 10 characters long" }
+                  })}
+                  className="w-full p-2 border rounded transition-all duration-200 focus:ring-2 focus:ring-accent focus:border-transparent"
+                />
+                {errors.appDescription && <p className="text-red-500 text-sm mt-1">{errors.appDescription.message}</p>}
+              </form>
             </CardContent>
           </Card>
           <Card className="bg-white shadow-lg rounded-lg overflow-hidden">
